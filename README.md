@@ -16,10 +16,11 @@ This repository contains PySpark and GeoPandas-based analysis of electric vehicl
 ├── total_installed_power.png                   # 🔋 Hexbin map of installed power per region
 ├── artifacts/                                  # Any saved plots, reports, or exports
 ├── output/                                     # Cleaned and parsed parquet files 
-(Included and full dataset not needed to run this project, 
-based on OSM data up to 2025-08-04T20:20:45Z)
+                                                  (Included and full dataset not needed to run 
+                                                  this project, based on OSM data up to 
+                                                  2025-08-04T20:20:45Z)
 ├── open_datasets/                              # Original OSM source files available at 
-https://download.geofabrik.de/europe/croatia.html
+                                                  https://download.geofabrik.de/europe/croatia.html
 ├── inspection/, extraction/, analysis/         # (Optional) Categorized subtools
 ├── legacy/                                     # Early exploratory notebooks and scripts
 ├── LICENSE
