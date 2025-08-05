@@ -15,8 +15,11 @@ This repository contains PySpark and GeoPandas-based analysis of electric vehicl
 ├── charging_station_density.png                # 📍 Bubble map of station count per cell
 ├── total_installed_power.png                   # 🔋 Hexbin map of installed power per region
 ├── artifacts/                                  # Any saved plots, reports, or exports
-├── output/                                     # Cleaned and parsed parquet files (Included and full dataset not needed to run this project, based on OSM data up to 2025-08-04T20:20:45Z)
-├── open_datasets/                              # Original OSM source files available at https://download.geofabrik.de/europe/croatia.html
+├── output/                                     # Cleaned and parsed parquet files 
+(Included and full dataset not needed to run this project, 
+based on OSM data up to 2025-08-04T20:20:45Z)
+├── open_datasets/                              # Original OSM source files available at 
+https://download.geofabrik.de/europe/croatia.html
 ├── inspection/, extraction/, analysis/         # (Optional) Categorized subtools
 ├── legacy/                                     # Early exploratory notebooks and scripts
 ├── LICENSE
@@ -29,23 +32,23 @@ This repository contains PySpark and GeoPandas-based analysis of electric vehicl
 
 The goal of this analysis is to map and assess the geographic distribution of EV infrastructure across Croatia, focusing on:
 
-- **Charging Station Density**  
-  Number of individual stations (binned into 14×14 geographic grid).
-
 - **Total Installed Power**  
   Aggregate installed power in kilowatts (kW) across different socket types per cell.
 
----
-
-## 📍 Charging Station Density
-
-![Charging Station Density](charging_station_density.png)
+- **Charging Station Density**  
+  Number of individual stations (binned into 14×14 geographic grid).
 
 ---
 
 ## 🔋 Total Installed Power
 
 ![Total Installed Power](total_installed_power.png)
+
+---
+
+## 📍 Charging Station Density
+
+![Charging Station Density](charging_station_density.png)
 
 ---
 
