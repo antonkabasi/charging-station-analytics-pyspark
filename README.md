@@ -1,11 +1,11 @@
-# EV Charging Station Analytics (Croatia) — PySpark + OSM
+# EV Charging Station Analytics (Croatia) — PySpark + OpenStreetMap (OSM) crowdsourced open dataset
 
 A compact, reproducible pipeline to analyze **EV charging infrastructure in Croatia** from **OpenStreetMap**:
 - extract charging stations,
 - derive **per‑station total installed power (kW)**, and
 - visualize **charger density** and **total installed power**.
 
-> Built as groundwork for similar extraction of **hydrogen refueling** points; none are currently detected in the Croatia extract, but the EV stack is complete and useful on its own.
+> Built as groundwork for similar extraction of **hydrogen refueling** points for my PhD research; none are currently detected in the Croatia extract, but the EV stack is complete and useful on its own.
 
 ---
 
@@ -35,9 +35,6 @@ A compact, reproducible pipeline to analyze **EV charging infrastructure in Croa
 ├── LICENSE
 └── README.md
 ```
-
-> The GitHub README used to show an older layout; this file reflects the **current** structure.
-
 ---
 
 ## 🚀 Quick Start
@@ -122,11 +119,9 @@ Generated figures (by default, saved at repo root):
 ---
 
 1. **Major corridors are well served.** The Zagreb–Karlovac–Rijeka axis and coastal cities (Zadar, Split) show both high density and high total kW.
-2. **Eastern/inland gaps.** Parts of Slavonia and regions near Osijek remain comparatively underserved.
+2. **Eastern/inland gaps.** Parts of Slavonia remain comparatively underserved.
 3. **Single‑site dominance.** Some areas show large total kW contributed by a single high‑output site—good headline numbers, weaker resilience.
 4. **Tourist belt emphasis.** Adriatic coverage aligns with seasonal demand along the coast.
-5. **Resilience opportunity.** Distributing power across more mid‑sized sites (≈50–150 kW) reduces single‑point bottlenecks.
-
 ---
 
 ## 📦 Data Source
@@ -134,7 +129,7 @@ Generated figures (by default, saved at repo root):
 - **OpenStreetMap** (via Geofabrik extract):  
   https://download.geofabrik.de/europe/croatia.html
 
-> Data completeness and tagging quality vary by region/operator. The pipeline uses conservative parsing; missing or ambiguous tags lower estimates.
+> Data completeness and tagging quality vary by region/operator.
 
 ---
 
@@ -154,16 +149,10 @@ They sanity‑check extraction, transformation (power derivation), and plotting 
 
 - Generalize the pipeline to **any country/region** (select a Geofabrik extract).
 - Operator/brand‑level aggregations and basic reliability heuristics.
-- **Hydrogen refueling** extraction using OSM tags (e.g., `amenity=fuel` + `fuel:hydrogen=yes`) with similar visuals.
+- **Hydrogen refueling** extraction using OSM tags with similar visuals.
 
 ---
 
 ## 📄 License
 
 MIT — see [LICENSE](LICENSE).
-
----
-
-## 👤 Author
-
-**Anton Kabaši** — https://github.com/antonkabasi
