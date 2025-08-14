@@ -107,7 +107,20 @@ Generated figures (by default, saved at repo root):
 
 ---
 
+## 🔋 Total Installed Power
+
+![Total Installed Power](total_installed_power.png)
+
+---
+
+## 📍 Charging Station Density
+
+![Charging Station Density](charging_station_density.png)
+
 ## 🧠 Observations (from this dataset)
+
+---
+
 1. **Major corridors are well served.** The Zagreb–Karlovac–Rijeka axis and coastal cities (Zadar, Split) show both high density and high total kW.
 2. **Eastern/inland gaps.** Parts of Slavonia and regions near Osijek remain comparatively underserved.
 3. **Single‑site dominance.** Some areas show large total kW contributed by a single high‑output site—good headline numbers, weaker resilience.
