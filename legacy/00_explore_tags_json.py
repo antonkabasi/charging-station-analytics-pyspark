@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 from pyspark.sql import SparkSession
-from pyspark.sql.functions import from_json, explode, map_keys
+from pyspark.sql.functions import from_json
 import pyspark.sql.types as T
 
 spark = (SparkSession.builder

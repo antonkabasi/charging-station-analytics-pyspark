@@ -32,7 +32,7 @@ world = gpd.read_file(
 )
 # Croatia in metric CRS
 cro = world[world.name=="Croatia"].to_crs(epsg=3857)
-border = cro.geometry.unary_union.boundary
+border = cro.geometry.union_all()
 buf100 = gpd.GeoSeries([border.buffer(100_000)], crs="EPSG:3857")
 buf_ll = buf100.to_crs(epsg=4326).iloc[0]
 minx, miny, maxx, maxy = buf_ll.bounds

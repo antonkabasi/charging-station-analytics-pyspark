@@ -1,106 +1,156 @@
-# EV Charging Station Analytics (Croatia)
+# EV Charging Station Analytics (Croatia) — PySpark + OSM
 
-This repository contains PySpark and GeoPandas-based analysis of electric vehicle (EV) charging station data for Croatia, extracted from OpenStreetMap. It includes tools for cleaning, extracting power information, and visualizing geographic trends in both charging station density and total installed power.
+A compact, reproducible pipeline to analyze **EV charging infrastructure in Croatia** from **OpenStreetMap**:
+- extract charging stations,
+- derive **per‑station total installed power (kW)**, and
+- visualize **charger density** and **total installed power**.
+
+> Built as groundwork for similar extraction of **hydrogen refueling** points; none are currently detected in the Croatia extract, but the EV stack is complete and useful on its own.
 
 ---
 
-## 🗂️ Project Structure
+## 🗂️ Current Project Structure
 
 ```
 .
-├── 01_extract_charging_stations_parquet.py     # Extract raw charging POIs from .osm.pbf
-├── 01_extract_total_power_kw.py                # Compute power per station from socket tags
-├── 02_charging_density.py                      # Generate density bubble plot
-├── 02_total_power.py                           # Generate hexbin heatmap of total kW
-├── charging_station_density.png                # 📍 Bubble map of station count per cell
-├── total_installed_power.png                   # 🔋 Hexbin map of installed power per region
-├── artifacts/                                  # Any saved plots, reports, or exports
-├── output/                                     # Cleaned and parsed parquet files 
-                                                  (Included and full dataset not needed to run 
-                                                  this project, based on OSM data up to 
-                                                  2025-08-04T20:20:45Z)
-├── open_datasets/                              # Original OSM source files available at 
-                                                  https://download.geofabrik.de/europe/croatia.html
-├── inspection/, extraction/, analysis/         # (Optional) Categorized subtools
-├── legacy/                                     # Early exploratory notebooks and scripts
+├── charging_station_analytics/            # (package scaffold, not required to run scripts)
+├── open_datasets/
+│   └── croatia-latest.osm.pbf            # Geofabrik OSM extract (download separately)
+├── output/
+│   ├── croatia_charging_stations.parquet
+│   └── stations_with_power.parquet/
+│       ├── part-*.snappy.parquet
+│       └── _SUCCESS
+├── scripts/
+│   ├── extract_charging_stations.py      # OSM → parquet of charging POIs
+│   ├── extract_total_power.py            # parse tags → per‑plug kW, total kW
+│   ├── visualize_density.py              # bubble map: station density
+│   └── visualize_power.py                # hexbin heatmap: total installed power
+├── tests/                                # pytest for extraction/transform/plots
+│   ├── test_extraction.py
+│   ├── test_transformation.py
+│   └── test_visualization.py
+├── charging_station_density.png          # 📍 density figure (output)
+├── total_installed_power.png             # 🔋 total power figure (output)
 ├── LICENSE
 └── README.md
 ```
 
----
-
-## 📊 Overview
-
-The goal of this analysis is to map and assess the geographic distribution of EV infrastructure across Croatia, focusing on:
-
-- **Total Installed Power**  
-  Aggregate installed power in kilowatts (kW) across different socket types per cell.
-
-- **Charging Station Density**  
-  Number of individual stations (binned into 14×14 geographic grid).
+> The GitHub README used to show an older layout; this file reflects the **current** structure.
 
 ---
 
-## 🔋 Total Installed Power
-
-![Total Installed Power](total_installed_power.png)
-
----
-
-## 📍 Charging Station Density
-
-![Charging Station Density](charging_station_density.png)
-
----
-
-## 🧠 Observations & Insights
-
-1. **Major Corridors Are Well Served**  
-   The Zagreb–Karlovac–Rijeka axis is both dense in stations and high in total kW. Coastal cities like Zadar and Split also show strong infrastructure presence.
-
-2. **Eastern and Inland Gaps**  
-   Areas like Slavonia and regions near Osijek have both low station count and minimal installed power. These remain underserved.
-
-3. **Monopolized Power**  
-   In some areas, large total power is contributed by just one station—likely a high-output DC fast charger. This creates vulnerability and bottlenecks.
-
-4. **Tourist Belt Emphasis**  
-   The Adriatic coast shows comprehensive infrastructure coverage. The pattern aligns with tourism intensity, suggesting planning bias toward seasonal demand.
-
-5. **Resilience Opportunities**  
-   Distributing power across more mid-sized stations (50–150 kW) rather than relying on a few ultra-fast chargers could improve grid robustness.
-
----
-
-## 🔧 Requirements
-
-- Python 3.10+
-- PySpark
-- GeoPandas
-- Matplotlib
-- Shapely
-
-Install via:
+## 🚀 Quick Start
 
 ```bash
-pip install pyspark geopandas matplotlib shapely
+# (Optional) create & activate a virtual environment
+python -m venv .venv && source .venv/bin/activate
+
+# Install Python deps
+python -m pip install --upgrade pip
+python -m pip install pyspark geopandas matplotlib shapely pyrosm pyarrow pytest
+# Note: GeoPandas may require system libs (GEOS/PROJ/GDAL) on some OS setups.
+
+# 1) Put the OSM extract here (download from Geofabrik):
+#    https://download.geofabrik.de/europe/croatia.html
+ls open_datasets/croatia-latest.osm.pbf
+
+# 2) Extract charging stations → Parquet
+python scripts/extract_charging_stations.py
+
+# 3) Compute per‑station total power (kW)
+python scripts/extract_total_power.py
+
+# 4) Visualize: density (count)
+python scripts/visualize_density.py
+
+# 5) Visualize: total installed power (sum of kW)
+python scripts/visualize_power.py
+
+# (Optional) run tests
+pytest -q
 ```
+
+Generated figures (by default, saved at repo root):
+- **`charging_station_density.png`** — bubble map of station counts.
+- **`total_installed_power.png`** — hexbin heatmap of aggregated kW.
+
+---
+
+## 📜 What Each Script Does
+
+### `scripts/extract_charging_stations.py`
+- Reads the OSM PBF with **pyrosm**.
+- Filters POIs with `amenity=charging_station` (nodes + ways).
+- Drops geometry for a lean table and writes **`output/croatia_charging_stations.parquet`** (Arrow Parquet).
+
+### `scripts/extract_total_power.py`
+- Loads `output/croatia_charging_stations.parquet` with **PySpark**.
+- Parses power‑related tags to estimate **per‑plug power (kW)**, using a conservative “max detected” across available keys:
+  - capacity (number of plugs), plus variants like `socket:*:output`, `socket:output`, and fallbacks (e.g., `charging_station:output`, `power` when present).
+- Computes:
+  - `per_plug_kw` — maximum per‑plug power derived from tags.
+  - `total_power_kw` — `capacity × per_plug_kw`.
+- Writes a slimmed dataset to **`output/stations_with_power.parquet`** with:  
+  `id, lon, lat, capacity, per_plug_kw, total_power_kw, name, operator`.
+
+### `scripts/visualize_density.py`
+- Loads stations via **Spark**, converts to **GeoPandas**.
+- Uses a ~**100 km buffer** around Croatia for geographic context.
+- Bins points to a regular grid and draws a **bubble map** (size ∝ count; red→yellow→green colormap).
+- Saves **`charging_station_density.png`**.
+
+### `scripts/visualize_power.py`
+- Loads **`output/stations_with_power.parquet`** and clips to the same ~100 km buffer.
+- Aggregates **`total_power_kw`** with a **hexbin** map (sum per hex; red→yellow→green colormap).
+- Saves **`total_installed_power.png`**.
+
+---
+
+## 🧠 Observations (from this dataset)
+1. **Major corridors are well served.** The Zagreb–Karlovac–Rijeka axis and coastal cities (Zadar, Split) show both high density and high total kW.
+2. **Eastern/inland gaps.** Parts of Slavonia and regions near Osijek remain comparatively underserved.
+3. **Single‑site dominance.** Some areas show large total kW contributed by a single high‑output site—good headline numbers, weaker resilience.
+4. **Tourist belt emphasis.** Adriatic coverage aligns with seasonal demand along the coast.
+5. **Resilience opportunity.** Distributing power across more mid‑sized sites (≈50–150 kW) reduces single‑point bottlenecks.
+
+---
+
+## 📦 Data Source
+
+- **OpenStreetMap** (via Geofabrik extract):  
+  https://download.geofabrik.de/europe/croatia.html
+
+> Data completeness and tagging quality vary by region/operator. The pipeline uses conservative parsing; missing or ambiguous tags lower estimates.
+
+---
+
+## 🧪 Testing
+
+Run the lightweight tests:
+
+```bash
+pytest -q
+```
+
+They sanity‑check extraction, transformation (power derivation), and plotting routines.
+
+---
+
+## 🔭 Next Steps
+
+- Generalize the pipeline to **any country/region** (select a Geofabrik extract).
+- Operator/brand‑level aggregations and basic reliability heuristics.
+- **Hydrogen refueling** extraction using OSM tags (e.g., `amenity=fuel` + `fuel:hydrogen=yes`) with similar visuals.
 
 ---
 
 ## 📄 License
 
-This project is licensed under the [MIT License](LICENSE).
+MIT — see [LICENSE](LICENSE).
 
 ---
 
-## 🚀 Author
+## 👤 Author
 
-Anton Kabaši – [https://github.com/antonkabasi](https://github.com/antonkabasi)
-
-## TODO
-
-- Generalize the pipeline to accept arbitrary country inputs instead of being hardcoded to Croatia. This will include:
-  - CLI interface
-  - Automatic bounding box and buffer computation from selected country
-  - Reusable visualizations for any OSM-supported region
+**Anton Kabaši** — https://github.com/antonkabasi
